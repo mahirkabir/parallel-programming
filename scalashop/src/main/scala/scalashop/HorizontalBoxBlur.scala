@@ -58,5 +58,16 @@ object HorizontalBoxBlur extends HorizontalBoxBlurInterface:
     * rows.
     */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit =
-    // TODO: Parallelize the blur method
-    ???
+    // Make sure the numTasks is valid
+    var numTasksClamped = clamp(numTasks, 1, src.height)
+    var stripWidth = math.ceil(src.height.toDouble / numTasksClamped).toInt
+    var points = 0 until src.height by stripWidth
+    var pointsFinal = points :+ src.height
+    // ChatGPT helped with the next line
+    var fromEnds = pointsFinal.zip(pointsFinal.tail)
+
+    var tasks = fromEnds.map { case (from, end) =>
+      task { blur(src, dst, from, end, radius) }
+    }
+
+    tasks.foreach(task => task.join())
