@@ -38,8 +38,18 @@ object HorizontalBoxBlur extends HorizontalBoxBlurInterface:
     * Within each row, `blur` traverses the pixels by going from left to right.
     */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit =
-    // TODO: Implement the blur method
-    ???
+    // Make sure that from and end are valid
+    var fromClamped = clamp(from, 0, src.height)
+    var endClamped = clamp(end, 0, src.height)
+    var y = fromClamped
+    while (y < endClamped) {
+      var x = 0
+      while (x < src.width) {
+        dst.update(x, y, boxBlurKernel(src, x, y, radius))
+        x += 1
+      }
+      y += 1
+    }
 
   /** Blurs the rows of the source image in parallel using `numTasks` tasks.
     *
