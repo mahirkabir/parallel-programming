@@ -39,8 +39,18 @@ object VerticalBoxBlur extends VerticalBoxBlurInterface:
     * bottom.
     */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit =
-    // TODO: Implement the blur method
-    ???
+    // Make sure that from and end are valid
+    var fromClamped = clamp(from, 0, src.width)
+    var endClamped = clamp(end, 0, src.width)
+    var x = fromClamped
+    while (x < endClamped) {
+      var y = 0
+      while (y < src.height) {
+        dst.update(x, y, boxBlurKernel(src, x, y, radius))
+        y += 1
+      }
+      x += 1
+    }
 
   /** Blurs the columns of the source image in parallel using `numTasks` tasks.
     *
