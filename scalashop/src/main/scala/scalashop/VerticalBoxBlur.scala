@@ -59,5 +59,16 @@ object VerticalBoxBlur extends VerticalBoxBlurInterface:
     * columns.
     */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit =
-    // TODO: Parallelize the blur method
-    ???
+    // Make sure the numTasks is valid
+    var numTasksClamped = clamp(numTasks, 1, src.width)
+    var stripWidth = math.ceil(src.width.toDouble / numTasksClamped).toInt
+    var points = 0 until src.width by stripWidth
+    var pointsFinal = points :+ src.width
+    // ChatGPT helped with the next line
+    var fromEnds = pointsFinal.zip(pointsFinal.tail)
+
+    var tasks = fromEnds.map { case (from, end) =>
+      task { blur(src, dst, from, end, radius) }
+    }
+
+    tasks.foreach(task => task.join())
